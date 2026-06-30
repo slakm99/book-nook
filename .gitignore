@@ -1,0 +1,22 @@
+.idea/
+.vscode/
+*.iml
+
+# 后端 Maven 构建产物
+book-nook/backend-library/target/
+
+# 前端依赖和构建产物
+book-nook/frontend-library/node_modules/
+book-nook/frontend-library/dist/
+
+# 文档/WPS/渲染临时文件
+~$*.docx
+book-nook/docs/_render_check_code_doc/
+
+# 旧汽车脚手架遗留目录，如本机仍存在则不提交
+backend-sales/target/
+frontend-sales/node_modules/
+frontend-sales/dist/
+
+.env
+*.log

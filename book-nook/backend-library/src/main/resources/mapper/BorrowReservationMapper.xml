@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booknook.mapper.BorrowReservationMapper">
+  <resultMap id="BaseResultMap" type="com.booknook.entity.BorrowReservation">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="reader_id" jdbcType="BIGINT" property="readerId" />
+    <result column="book_id" jdbcType="BIGINT" property="bookId" />
+    <result column="queue_no" jdbcType="INTEGER" property="queueNo" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="pickup_deadline" jdbcType="TIMESTAMP" property="pickupDeadline" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, reader_id, book_id, queue_no, status, pickup_deadline, create_time
+  </sql>
+  <select id="selectByExample" parameterType="com.booknook.entity.BorrowReservationExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from borrow_reservation
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from borrow_reservation
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from borrow_reservation
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.booknook.entity.BorrowReservationExample">
+    delete from borrow_reservation
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.booknook.entity.BorrowReservation">
+    insert into borrow_reservation (id, reader_id, book_id, 
+      queue_no, status, pickup_deadline, 
+      create_time)
+    values (#{id,jdbcType=BIGINT}, #{readerId,jdbcType=BIGINT}, #{bookId,jdbcType=BIGINT}, 
+      #{queueNo,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR}, #{pickupDeadline,jdbcType=TIMESTAMP}, 
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.booknook.entity.BorrowReservation">
+    insert into borrow_reservation
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="readerId != null">
+        reader_id,
+      </if>
+      <if test="bookId != null">
+        book_id,
+      </if>
+      <if test="queueNo != null">
+        queue_no,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="pickupDeadline != null">
+        pickup_deadline,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="readerId != null">
+        #{readerId,jdbcType=BIGINT},
+      </if>
+      <if test="bookId != null">
+        #{bookId,jdbcType=BIGINT},
+      </if>
+      <if test="queueNo != null">
+        #{queueNo,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="pickupDeadline != null">
+        #{pickupDeadline,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.booknook.entity.BorrowReservationExample" resultType="java.lang.Long">
+    select count(*) from borrow_reservation
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update borrow_reservation
+    <set>
+      <if test="row.id != null">
+        id = #{row.id,jdbcType=BIGINT},
+      </if>
+      <if test="row.readerId != null">
+        reader_id = #{row.readerId,jdbcType=BIGINT},
+      </if>
+      <if test="row.bookId != null">
+        book_id = #{row.bookId,jdbcType=BIGINT},
+      </if>
+      <if test="row.queueNo != null">
+        queue_no = #{row.queueNo,jdbcType=INTEGER},
+      </if>
+      <if test="row.status != null">
+        status = #{row.status,jdbcType=VARCHAR},
+      </if>
+      <if test="row.pickupDeadline != null">
+        pickup_deadline = #{row.pickupDeadline,jdbcType=TIMESTAMP},
+      </if>
+      <if test="row.createTime != null">
+        create_time = #{row.createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update borrow_reservation
+    set id = #{row.id,jdbcType=BIGINT},
+      reader_id = #{row.readerId,jdbcType=BIGINT},
+      book_id = #{row.bookId,jdbcType=BIGINT},
+      queue_no = #{row.queueNo,jdbcType=INTEGER},
+      status = #{row.status,jdbcType=VARCHAR},
+      pickup_deadline = #{row.pickupDeadline,jdbcType=TIMESTAMP},
+      create_time = #{row.createTime,jdbcType=TIMESTAMP}
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.booknook.entity.BorrowReservation">
+    update borrow_reservation
+    <set>
+      <if test="readerId != null">
+        reader_id = #{readerId,jdbcType=BIGINT},
+      </if>
+      <if test="bookId != null">
+        book_id = #{bookId,jdbcType=BIGINT},
+      </if>
+      <if test="queueNo != null">
+        queue_no = #{queueNo,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="pickupDeadline != null">
+        pickup_deadline = #{pickupDeadline,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.booknook.entity.BorrowReservation">
+    update borrow_reservation
+    set reader_id = #{readerId,jdbcType=BIGINT},
+      book_id = #{bookId,jdbcType=BIGINT},
+      queue_no = #{queueNo,jdbcType=INTEGER},
+      status = #{status,jdbcType=VARCHAR},
+      pickup_deadline = #{pickupDeadline,jdbcType=TIMESTAMP},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

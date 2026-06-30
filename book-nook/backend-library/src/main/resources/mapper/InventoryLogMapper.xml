@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booknook.mapper.InventoryLogMapper">
+  <resultMap id="BaseResultMap" type="com.booknook.entity.InventoryLog">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="book_id" jdbcType="BIGINT" property="bookId" />
+    <result column="change_type" jdbcType="VARCHAR" property="changeType" />
+    <result column="before_stock" jdbcType="INTEGER" property="beforeStock" />
+    <result column="change_quantity" jdbcType="INTEGER" property="changeQuantity" />
+    <result column="after_stock" jdbcType="INTEGER" property="afterStock" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, book_id, change_type, before_stock, change_quantity, after_stock, remark, create_time
+  </sql>
+  <select id="selectByExample" parameterType="com.booknook.entity.InventoryLogExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from inventory_log
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from inventory_log
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from inventory_log
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.booknook.entity.InventoryLogExample">
+    delete from inventory_log
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.booknook.entity.InventoryLog">
+    insert into inventory_log (id, book_id, change_type, 
+      before_stock, change_quantity, after_stock, 
+      remark, create_time)
+    values (#{id,jdbcType=BIGINT}, #{bookId,jdbcType=BIGINT}, #{changeType,jdbcType=VARCHAR}, 
+      #{beforeStock,jdbcType=INTEGER}, #{changeQuantity,jdbcType=INTEGER}, #{afterStock,jdbcType=INTEGER}, 
+      #{remark,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.booknook.entity.InventoryLog">
+    insert into inventory_log
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="bookId != null">
+        book_id,
+      </if>
+      <if test="changeType != null">
+        change_type,
+      </if>
+      <if test="beforeStock != null">
+        before_stock,
+      </if>
+      <if test="changeQuantity != null">
+        change_quantity,
+      </if>
+      <if test="afterStock != null">
+        after_stock,
+      </if>
+      <if test="remark != null">
+        remark,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="bookId != null">
+        #{bookId,jdbcType=BIGINT},
+      </if>
+      <if test="changeType != null">
+        #{changeType,jdbcType=VARCHAR},
+      </if>
+      <if test="beforeStock != null">
+        #{beforeStock,jdbcType=INTEGER},
+      </if>
+      <if test="changeQuantity != null">
+        #{changeQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="afterStock != null">
+        #{afterStock,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null">
+        #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.booknook.entity.InventoryLogExample" resultType="java.lang.Long">
+    select count(*) from inventory_log
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update inventory_log
+    <set>
+      <if test="row.id != null">
+        id = #{row.id,jdbcType=BIGINT},
+      </if>
+      <if test="row.bookId != null">
+        book_id = #{row.bookId,jdbcType=BIGINT},
+      </if>
+      <if test="row.changeType != null">
+        change_type = #{row.changeType,jdbcType=VARCHAR},
+      </if>
+      <if test="row.beforeStock != null">
+        before_stock = #{row.beforeStock,jdbcType=INTEGER},
+      </if>
+      <if test="row.changeQuantity != null">
+        change_quantity = #{row.changeQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="row.afterStock != null">
+        after_stock = #{row.afterStock,jdbcType=INTEGER},
+      </if>
+      <if test="row.remark != null">
+        remark = #{row.remark,jdbcType=VARCHAR},
+      </if>
+      <if test="row.createTime != null">
+        create_time = #{row.createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update inventory_log
+    set id = #{row.id,jdbcType=BIGINT},
+      book_id = #{row.bookId,jdbcType=BIGINT},
+      change_type = #{row.changeType,jdbcType=VARCHAR},
+      before_stock = #{row.beforeStock,jdbcType=INTEGER},
+      change_quantity = #{row.changeQuantity,jdbcType=INTEGER},
+      after_stock = #{row.afterStock,jdbcType=INTEGER},
+      remark = #{row.remark,jdbcType=VARCHAR},
+      create_time = #{row.createTime,jdbcType=TIMESTAMP}
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.booknook.entity.InventoryLog">
+    update inventory_log
+    <set>
+      <if test="bookId != null">
+        book_id = #{bookId,jdbcType=BIGINT},
+      </if>
+      <if test="changeType != null">
+        change_type = #{changeType,jdbcType=VARCHAR},
+      </if>
+      <if test="beforeStock != null">
+        before_stock = #{beforeStock,jdbcType=INTEGER},
+      </if>
+      <if test="changeQuantity != null">
+        change_quantity = #{changeQuantity,jdbcType=INTEGER},
+      </if>
+      <if test="afterStock != null">
+        after_stock = #{afterStock,jdbcType=INTEGER},
+      </if>
+      <if test="remark != null">
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.booknook.entity.InventoryLog">
+    update inventory_log
+    set book_id = #{bookId,jdbcType=BIGINT},
+      change_type = #{changeType,jdbcType=VARCHAR},
+      before_stock = #{beforeStock,jdbcType=INTEGER},
+      change_quantity = #{changeQuantity,jdbcType=INTEGER},
+      after_stock = #{afterStock,jdbcType=INTEGER},
+      remark = #{remark,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

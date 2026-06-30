@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booknook.mapper.LibraryMapper">
+    <select id="findUserByUsername" resultType="map">
+        SELECT id, username, password, role, ref_id, status
+        FROM sys_user
+        WHERE username = #{username}
+    </select>
+
+    <select id="listCategories" resultType="map">
+        SELECT id, category_name, description, sort_order, status
+        FROM book_category
+        WHERE status = 1
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <sql id="bookWhere">
+        <where>
+            b.status = 'ON_SHELF'
+            <if test="keyword != null and keyword != ''">
+                AND (b.title LIKE CONCAT('%', #{keyword}, '%')
+                OR b.isbn LIKE CONCAT('%', #{keyword}, '%')
+                OR b.tags LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="author != null and author != ''">
+                AND b.author LIKE CONCAT('%', #{author}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND b.category_id = #{categoryId}
+            </if>
+            <if test="stockStatus == 'available'">
+                AND b.stock_available &gt; 0
+            </if>
+            <if test="stockStatus == 'empty'">
+                AND b.stock_available = 0
+            </if>
+        </where>
+    </sql>
+
+    <select id="listBooks" resultType="map">
+        SELECT b.id, b.isbn, b.title, b.author, b.publisher, b.category_id,
+               c.category_name, b.description, b.cover_url, b.tags,
+               b.stock_total, b.stock_available, b.borrow_count, b.status, b.create_time
+        FROM book b
+        JOIN book_category c ON c.id = b.category_id
+        <include refid="bookWhere"/>
+        ORDER BY b.borrow_count DESC, b.id DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countBooks" resultType="long">
+        SELECT COUNT(*)
+        FROM book b
+        JOIN book_category c ON c.id = b.category_id
+        <include refid="bookWhere"/>
+    </select>
+
+    <select id="countCategoryByName" resultType="int">
+        SELECT COUNT(*) FROM book_category WHERE category_name=#{name}<if test="id != null"> AND id != #{id}</if>
+    </select>
+    <insert id="insertCategory">
+        INSERT INTO book_category(category_name, description, sort_order, status)
+        VALUES(#{p.categoryName}, #{p.description}, COALESCE(#{p.sortOrder}, 0), COALESCE(#{p.status}, 1))
+    </insert>
+    <update id="updateCategory">
+        UPDATE book_category SET category_name=#{p.categoryName}, description=#{p.description},
+        sort_order=COALESCE(#{p.sortOrder}, sort_order), status=COALESCE(#{p.status}, status) WHERE id=#{id}
+    </update>
+    <delete id="deleteCategory">DELETE FROM book_category WHERE id=#{id} AND NOT EXISTS(SELECT 1 FROM book WHERE category_id=#{id})</delete>
+
+    <select id="countBookByIsbn" resultType="int">
+        SELECT COUNT(*) FROM book WHERE isbn=#{isbn}<if test="id != null"> AND id != #{id}</if>
+    </select>
+    <select id="findBookForUpdate" resultType="map">SELECT * FROM book WHERE id=#{id} FOR UPDATE</select>
+    <insert id="insertBook">
+        INSERT INTO book(isbn,title,author,publisher,category_id,description,cover_url,tags,stock_total,stock_available,borrow_count,status)
+        VALUES(#{p.isbn},#{p.title},#{p.author},#{p.publisher},#{p.categoryId},#{p.description},#{p.coverUrl},#{p.tags},
+        COALESCE(#{p.stockTotal},0),COALESCE(#{p.stockAvailable},#{p.stockTotal},0),0,COALESCE(#{p.status},'ON_SHELF'))
+    </insert>
+    <update id="updateBook">
+        UPDATE book SET isbn=#{p.isbn}, title=#{p.title}, author=#{p.author}, publisher=#{p.publisher},
+        category_id=#{p.categoryId}, description=#{p.description}, cover_url=#{p.coverUrl}, tags=#{p.tags},
+        stock_total=COALESCE(#{p.stockTotal}, stock_total), stock_available=COALESCE(#{p.stockAvailable}, stock_available),
+        status=COALESCE(#{p.status}, status) WHERE id=#{id}
+    </update>
+    <delete id="deleteBook">DELETE FROM book WHERE id=#{id} AND NOT EXISTS(SELECT 1 FROM borrow_record WHERE book_id=#{id})</delete>
+
+    <sql id="readerWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">AND (name LIKE CONCAT('%',#{keyword},'%') OR student_no LIKE CONCAT('%',#{keyword},'%') OR phone LIKE CONCAT('%',#{keyword},'%'))</if>
+            <if test="status != null and status != ''">AND status=#{status}</if>
+        </where>
+    </sql>
+    <select id="listReaders" resultType="map">SELECT * FROM reader <include refid="readerWhere"/> ORDER BY id DESC LIMIT #{offset},#{size}</select>
+    <select id="countReaders" resultType="long">SELECT COUNT(*) FROM reader <include refid="readerWhere"/></select>
+    <select id="countReaderByStudentNo" resultType="int">
+        SELECT COUNT(*) FROM reader WHERE student_no=#{studentNo}<if test="id != null"> AND id != #{id}</if>
+    </select>
+    <insert id="insertReader">INSERT INTO reader(student_no,name,phone,college,grade,status) VALUES(#{p.studentNo},#{p.name},#{p.phone},#{p.college},#{p.grade},COALESCE(#{p.status},1))</insert>
+    <update id="updateReader">UPDATE reader SET student_no=#{p.studentNo},name=#{p.name},phone=#{p.phone},college=#{p.college},grade=#{p.grade},status=COALESCE(#{p.status},status) WHERE id=#{id}</update>
+    <delete id="deleteReader">DELETE FROM reader WHERE id=#{id} AND NOT EXISTS(SELECT 1 FROM borrow_record WHERE reader_id=#{id})</delete>
+
+    <select id="countActiveBorrow" resultType="int">SELECT COUNT(*) FROM borrow_record WHERE reader_id=#{readerId} AND book_id=#{bookId} AND status IN('BORROWED','OVERDUE')</select>
+    <insert id="insertBorrow">INSERT INTO borrow_record(reader_id,book_id,borrow_time,due_time,status,renew_count) VALUES(#{readerId},#{bookId},NOW(),DATE_ADD(NOW(), INTERVAL 30 DAY),'BORROWED',0)</insert>
+    <update id="decreaseBookStock">UPDATE book SET stock_available=stock_available-1 WHERE id=#{bookId} AND stock_available&gt;0</update>
+    <update id="increaseBookStock">UPDATE book SET stock_available=stock_available+1 WHERE id=#{bookId} AND stock_available&lt;stock_total</update>
+    <update id="increaseBorrowCount">UPDATE book SET borrow_count=borrow_count+1 WHERE id=#{bookId}</update>
+    <select id="findBorrowForUpdate" resultType="map">SELECT * FROM borrow_record WHERE id=#{id} FOR UPDATE</select>
+    <update id="returnBorrow">UPDATE borrow_record SET status='RETURNED', return_time=NOW() WHERE id=#{id} AND status IN('BORROWED','OVERDUE')</update>
+    <sql id="borrowWhere">
+        <where>
+            <if test="readerId != null">AND br.reader_id=#{readerId}</if>
+            <if test="status != null and status != ''">AND br.status=#{status}</if>
+            <if test="keyword != null and keyword != ''">AND (b.title LIKE CONCAT('%',#{keyword},'%') OR r.name LIKE CONCAT('%',#{keyword},'%') OR r.student_no LIKE CONCAT('%',#{keyword},'%'))</if>
+        </where>
+    </sql>
+    <select id="listBorrows" resultType="map">
+        SELECT br.*, r.name reader_name, r.student_no, b.title book_title, b.author,
+        IF(br.status='BORROWED' AND br.due_time&lt;NOW(),'OVERDUE',br.status) display_status
+        FROM borrow_record br JOIN reader r ON r.id=br.reader_id JOIN book b ON b.id=br.book_id
+        <include refid="borrowWhere"/> ORDER BY br.id DESC LIMIT #{offset},#{size}
+    </select>
+    <select id="countBorrows" resultType="long">SELECT COUNT(*) FROM borrow_record br JOIN reader r ON r.id=br.reader_id JOIN book b ON b.id=br.book_id <include refid="borrowWhere"/></select>
+
+    <insert id="insertInventoryLog">
+        INSERT INTO inventory_log(book_id,change_type,before_stock,change_quantity,after_stock,remark)
+        VALUES(#{bookId},#{changeType},#{beforeStock},#{changeQuantity},#{afterStock},#{remark})
+    </insert>
+    <select id="listInventoryLogs" resultType="map">
+        SELECT l.*, b.title book_title, b.isbn FROM inventory_log l JOIN book b ON b.id=l.book_id
+        <where><if test="keyword != null and keyword != ''">b.title LIKE CONCAT('%',#{keyword},'%') OR b.isbn LIKE CONCAT('%',#{keyword},'%')</if></where>
+        ORDER BY l.id DESC LIMIT #{offset},#{size}
+    </select>
+    <select id="countInventoryLogs" resultType="long">
+        SELECT COUNT(*) FROM inventory_log l JOIN book b ON b.id=l.book_id
+        <where><if test="keyword != null and keyword != ''">b.title LIKE CONCAT('%',#{keyword},'%') OR b.isbn LIKE CONCAT('%',#{keyword},'%')</if></where>
+    </select>
+
+    <select id="countActiveReservation" resultType="int">SELECT COUNT(*) FROM borrow_reservation WHERE reader_id=#{readerId} AND book_id=#{bookId} AND status IN('WAITING','READY')</select>
+    <select id="nextReservationQueueNo" resultType="int">SELECT COALESCE(MAX(queue_no),0)+1 FROM borrow_reservation WHERE book_id=#{bookId} AND status IN('WAITING','READY')</select>
+    <insert id="insertReservation">INSERT INTO borrow_reservation(reader_id,book_id,queue_no,status,create_time) VALUES(#{readerId},#{bookId},#{queueNo},'WAITING',NOW())</insert>
+    <select id="findFirstWaitingReservation" resultType="map">SELECT * FROM borrow_reservation WHERE book_id=#{bookId} AND status='WAITING' ORDER BY create_time ASC LIMIT 1</select>
+    <update id="markReservationReady">UPDATE borrow_reservation SET status='READY', pickup_deadline=DATE_ADD(NOW(), INTERVAL 2 DAY) WHERE id=#{id}</update>
+    <sql id="reservationWhere">
+        <where>
+            <if test="readerId != null">AND rv.reader_id=#{readerId}</if>
+            <if test="status != null and status != ''">AND rv.status=#{status}</if>
+            <if test="keyword != null and keyword != ''">AND (b.title LIKE CONCAT('%',#{keyword},'%') OR r.name LIKE CONCAT('%',#{keyword},'%') OR r.student_no LIKE CONCAT('%',#{keyword},'%'))</if>
+        </where>
+    </sql>
+    <select id="listReservations" resultType="map">
+        SELECT rv.*, r.name reader_name, r.student_no, b.title book_title, b.author FROM borrow_reservation rv
+        JOIN reader r ON r.id=rv.reader_id JOIN book b ON b.id=rv.book_id
+        <include refid="reservationWhere"/> ORDER BY rv.id DESC LIMIT #{offset},#{size}
+    </select>
+    <select id="countReservations" resultType="long">SELECT COUNT(*) FROM borrow_reservation rv JOIN reader r ON r.id=rv.reader_id JOIN book b ON b.id=rv.book_id <include refid="reservationWhere"/></select>
+
+    <select id="listGoals" resultType="map">SELECT * FROM reading_goal WHERE reader_id=#{readerId} ORDER BY id DESC</select>
+    <insert id="upsertGoal">
+        INSERT INTO reading_goal(reader_id,target_period,target_count,completed_count)
+        VALUES(#{p.readerId},#{p.targetPeriod},#{p.targetCount},COALESCE(#{p.completedCount},0))
+        ON DUPLICATE KEY UPDATE target_count=VALUES(target_count), completed_count=VALUES(completed_count)
+    </insert>
+    <update id="increaseCurrentGoal">UPDATE reading_goal SET completed_count=completed_count+1 WHERE reader_id=#{readerId} AND target_period=DATE_FORMAT(CURDATE(),'%Y-%m')</update>
+
+    <select id="dashboardOverview" resultType="map">
+        SELECT (SELECT COUNT(*) FROM book) book_total,
+        (SELECT COALESCE(SUM(stock_available),0) FROM book) available_total,
+        (SELECT COUNT(*) FROM reader) reader_total,
+        (SELECT COUNT(*) FROM borrow_record WHERE status IN('BORROWED','OVERDUE')) active_borrow_total,
+        (SELECT COUNT(*) FROM borrow_reservation WHERE status IN('WAITING','READY')) reservation_total,
+        (SELECT COUNT(*) FROM borrow_record WHERE status='BORROWED' AND due_time&lt;NOW()) overdue_total
+    </select>
+    <select id="dashboardTrend" resultType="map">
+        SELECT DATE(borrow_time) name, COUNT(*) value FROM borrow_record
+        WHERE borrow_time &gt;= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+        GROUP BY DATE(borrow_time) ORDER BY name
+    </select>
+    <select id="dashboardCategoryDistribution" resultType="map">
+        SELECT c.category_name name, COUNT(br.id) value FROM book_category c
+        LEFT JOIN book b ON b.category_id=c.id LEFT JOIN borrow_record br ON br.book_id=b.id
+        GROUP BY c.id ORDER BY value DESC
+    </select>
+    <select id="dashboardHotBooks" resultType="map">SELECT title name, borrow_count value FROM book ORDER BY borrow_count DESC LIMIT 8</select>
+    <select id="favoriteCategory" resultType="long">
+        SELECT b.category_id FROM borrow_record br JOIN book b ON b.id=br.book_id
+        WHERE br.reader_id=#{readerId} GROUP BY b.category_id ORDER BY COUNT(*) DESC LIMIT 1
+    </select>
+    <select id="recommendByCategory" resultType="map">
+        SELECT b.*, c.category_name FROM book b JOIN book_category c ON c.id=b.category_id
+        WHERE b.category_id=#{categoryId} AND b.stock_available&gt;0
+        AND NOT EXISTS(SELECT 1 FROM borrow_record br WHERE br.reader_id=#{readerId} AND br.book_id=b.id)
+        ORDER BY b.borrow_count DESC LIMIT 8
+    </select>
+    <select id="recommendHot" resultType="map">
+        SELECT b.*, c.category_name FROM book b JOIN book_category c ON c.id=b.category_id
+        WHERE b.stock_available&gt;0
+        <if test="readerId != null">AND NOT EXISTS(SELECT 1 FROM borrow_record br WHERE br.reader_id=#{readerId} AND br.book_id=b.id)</if>
+        ORDER BY b.borrow_count DESC LIMIT 8
+    </select>
+    <select id="blindPick" resultType="map">
+        SELECT b.*, c.category_name FROM book b JOIN book_category c ON c.id=b.category_id
+        WHERE b.stock_available&gt;0 AND b.status='ON_SHELF' ORDER BY RAND() LIMIT 1
+    </select>
+</mapper>
