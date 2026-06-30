@@ -13,7 +13,7 @@
 - `backend-library`：Spring + SpringMVC + MyBatis + MySQL 8 + Maven + Tomcat 后端项目，独立运行。
 - `frontend-library`：Vue3 + Vite + Element Plus + Axios + ECharts 前端项目，独立运行。
 - `sql`：数据库建表和初始化演示数据，数据库名固定为 `book_nook`。
-- `docs`：需求文档、数据库设计、接口文档、测试文档。
+- `项目文档`：需求文档、数据库设计、接口文档、测试文档。
 
 Vue 前端禁止放入 Maven 后端目录。前端通过 Vite `/api` 代理访问后端 `http://localhost:8080`。
 

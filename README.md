@@ -7,7 +7,7 @@
 - `book-nook/backend-library`：SSM 后端项目，Maven 构建，Tomcat 运行。
 - `book-nook/frontend-library`：Vue3 + Vite + Element Plus 前端项目。
 - `book-nook/sql/book_nook.sql`：完整数据库脚本，包含建库、9 张表、主外键、字段注释和测试数据。
-- `book-nook/docs`：需求文档、数据库设计、接口文档、测试文档和代码功能说明。
+- `book-nook/项目文档`：需求文档、数据库设计、接口文档、测试文档和代码功能说明。
 - `项目演示资料`：答辩演示辅助资料。
 
 ## 技术栈
