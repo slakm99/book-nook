@@ -56,9 +56,13 @@ public interface LibraryMapper {
 
     int countActiveReservation(@Param("readerId") Long readerId, @Param("bookId") Long bookId);
     Integer nextReservationQueueNo(@Param("bookId") Long bookId);
-    int insertReservation(@Param("readerId") Long readerId, @Param("bookId") Long bookId, @Param("queueNo") Integer queueNo);
+    int insertReservation(@Param("readerId") Long readerId, @Param("bookId") Long bookId, @Param("queueNo") Integer queueNo, @Param("status") String status);
+    Map<String, Object> findReservationForUpdate(@Param("id") Long id);
     Map<String, Object> findFirstWaitingReservation(@Param("bookId") Long bookId);
     int markReservationReady(@Param("id") Long id);
+    int finishReservation(@Param("id") Long id);
+    int cancelReservation(@Param("id") Long id, @Param("readerId") Long readerId);
+    int expireReadyReservations();
     List<Map<String, Object>> listReservations(@Param("readerId") Long readerId, @Param("status") String status, @Param("keyword") String keyword, @Param("offset") int offset, @Param("size") int size);
     long countReservations(@Param("readerId") Long readerId, @Param("status") String status, @Param("keyword") String keyword);
 

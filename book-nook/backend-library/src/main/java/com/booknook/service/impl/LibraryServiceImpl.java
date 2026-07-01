@@ -143,12 +143,48 @@ public class LibraryServiceImpl implements LibraryService {
         if (mapper.countActiveReservation(readerId, bookId) > 0) throw new BusinessException("同一读者不能重复预约同一本有效图书");
         Map<String, Object> book = mapper.findBookForUpdate(bookId);
         if (book == null) throw new BusinessException("图书不存在");
+        int available = ((Number) book.get("stock_available")).intValue();
         Integer queueNo = mapper.nextReservationQueueNo(bookId);
-        mapper.insertReservation(readerId, bookId, queueNo);
+        mapper.insertReservation(readerId, bookId, queueNo, available > 0 ? "READY" : "WAITING");
+    }
+
+    @Override
+    @Transactional
+    public void cancelReservation(Long reservationId) {
+        Long currentReaderId = currentReaderId();
+        if (mapper.cancelReservation(reservationId, currentReaderId) == 0) {
+            throw new BusinessException("预约不存在、已处理或无权取消");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void pickupReservation(Long reservationId) {
+        mapper.expireReadyReservations();
+        Map<String, Object> reservation = mapper.findReservationForUpdate(reservationId);
+        if (reservation == null) throw new BusinessException("预约记录不存在");
+        if (!"READY".equals(str(reservation.get("status")))) {
+            throw new BusinessException("只有可取书状态的预约才能办理借出");
+        }
+        Long readerId = ((Number) reservation.get("reader_id")).longValue();
+        Long bookId = ((Number) reservation.get("book_id")).longValue();
+        if (mapper.countActiveBorrow(readerId, bookId) > 0) {
+            throw new BusinessException("该读者已经借阅了这本书，不能重复借阅");
+        }
+        Map<String, Object> book = mapper.findBookForUpdate(bookId);
+        if (book == null) throw new BusinessException("图书不存在");
+        int before = ((Number) book.get("stock_available")).intValue();
+        if (before <= 0) throw new BusinessException("当前暂无可借库存，不能办理取书");
+        mapper.insertBorrow(readerId, bookId);
+        if (mapper.decreaseBookStock(bookId) == 0) throw new BusinessException("库存不足，取书失败");
+        mapper.increaseBorrowCount(bookId);
+        mapper.finishReservation(reservationId);
+        mapper.insertInventoryLog(bookId, "BORROW", before, -1, before - 1, "预约取书借出：" + book.get("title"));
     }
 
     @Override
     public PageResult<Map<String, Object>> reservations(Map<String, Object> p) {
+        mapper.expireReadyReservations();
         int page = page(p), size = size(p), offset = (page - 1) * size;
         Long readerId = readerScopedId(p.get("readerId"));
         String status = strOrNull(p.get("status"));

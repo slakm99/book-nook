@@ -138,9 +138,24 @@
 
     <select id="countActiveReservation" resultType="int">SELECT COUNT(*) FROM borrow_reservation WHERE reader_id=#{readerId} AND book_id=#{bookId} AND status IN('WAITING','READY')</select>
     <select id="nextReservationQueueNo" resultType="int">SELECT COALESCE(MAX(queue_no),0)+1 FROM borrow_reservation WHERE book_id=#{bookId} AND status IN('WAITING','READY')</select>
-    <insert id="insertReservation">INSERT INTO borrow_reservation(reader_id,book_id,queue_no,status,create_time) VALUES(#{readerId},#{bookId},#{queueNo},'WAITING',NOW())</insert>
+    <insert id="insertReservation">
+        INSERT INTO borrow_reservation(reader_id,book_id,queue_no,status,pickup_deadline,create_time)
+        VALUES(#{readerId},#{bookId},#{queueNo},#{status},
+        CASE WHEN #{status}='READY' THEN DATE_ADD(NOW(), INTERVAL 2 DAY) ELSE NULL END,NOW())
+    </insert>
+    <select id="findReservationForUpdate" resultType="map">SELECT * FROM borrow_reservation WHERE id=#{id} FOR UPDATE</select>
     <select id="findFirstWaitingReservation" resultType="map">SELECT * FROM borrow_reservation WHERE book_id=#{bookId} AND status='WAITING' ORDER BY create_time ASC LIMIT 1</select>
     <update id="markReservationReady">UPDATE borrow_reservation SET status='READY', pickup_deadline=DATE_ADD(NOW(), INTERVAL 2 DAY) WHERE id=#{id}</update>
+    <update id="finishReservation">UPDATE borrow_reservation SET status='FINISHED' WHERE id=#{id} AND status='READY'</update>
+    <update id="cancelReservation">
+        UPDATE borrow_reservation SET status='CANCELLED'
+        WHERE id=#{id} AND status IN('WAITING','READY')
+        <if test="readerId != null">AND reader_id=#{readerId}</if>
+    </update>
+    <update id="expireReadyReservations">
+        UPDATE borrow_reservation SET status='EXPIRED'
+        WHERE status='READY' AND pickup_deadline IS NOT NULL AND pickup_deadline &lt; NOW()
+    </update>
     <sql id="reservationWhere">
         <where>
             <if test="readerId != null">AND rv.reader_id=#{readerId}</if>

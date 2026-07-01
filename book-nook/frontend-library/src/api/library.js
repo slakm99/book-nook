@@ -18,6 +18,8 @@ export const api = {
 
   reservations: (params) => request({ url: '/reservation/list', params }),
   reserve: (data) => request({ url: '/reservation', method: 'post', data }),
+  cancelReservation: (id) => request({ url: `/reservation/${id}/cancel`, method: 'put' }),
+  pickupReservation: (id) => request({ url: `/reservation/${id}/pickup`, method: 'put' }),
 
   inventoryLogs: (params) => request({ url: '/inventory-log/list', params }),
   goals: (params) => request({ url: '/reading-goal/list', params }),

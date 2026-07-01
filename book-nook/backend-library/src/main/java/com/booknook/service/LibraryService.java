@@ -18,6 +18,8 @@ public interface LibraryService {
     void returnBook(Long borrowId);
     PageResult<Map<String, Object>> borrows(Map<String, Object> p);
     void reserve(Long readerId, Long bookId);
+    void cancelReservation(Long reservationId);
+    void pickupReservation(Long reservationId);
     PageResult<Map<String, Object>> reservations(Map<String, Object> p);
     PageResult<Map<String, Object>> inventoryLogs(Map<String, Object> p);
     List<Map<String, Object>> goals(Long readerId);

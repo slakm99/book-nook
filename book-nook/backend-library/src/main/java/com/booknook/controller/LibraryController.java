@@ -52,6 +52,10 @@ public class LibraryController {
 
     @PostMapping("/api/reservation")
     public Result<Void> reserve(@RequestBody Map<String, Object> p) { service.reserve(num(p.get("readerId")), num(p.get("bookId"))); return Result.ok(); }
+    @PutMapping("/api/reservation/{id}/cancel")
+    public Result<Void> cancelReservation(@PathVariable Long id) { service.cancelReservation(id); return Result.ok(); }
+    @PutMapping("/api/reservation/{id}/pickup")
+    public Result<Void> pickupReservation(@PathVariable Long id) { requireManager(); service.pickupReservation(id); return Result.ok(); }
     @GetMapping("/api/reservation/list")
     public Result<PageResult<Map<String, Object>>> reservations(@RequestParam Map<String, Object> p) { return Result.ok(service.reservations(p)); }
 
