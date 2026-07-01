@@ -135,6 +135,10 @@ public class LibraryServiceImpl implements LibraryService {
     @Override
     @Transactional
     public void reserve(Long readerId, Long bookId) {
+        Long currentReaderId = currentReaderId();
+        if (currentReaderId != null) {
+            readerId = currentReaderId;
+        }
         if (readerId == null || bookId == null) throw new BusinessException("读者和图书不能为空");
         if (mapper.countActiveReservation(readerId, bookId) > 0) throw new BusinessException("同一读者不能重复预约同一本有效图书");
         Map<String, Object> book = mapper.findBookForUpdate(bookId);
@@ -166,9 +170,11 @@ public class LibraryServiceImpl implements LibraryService {
 
     @Override
     public void saveGoal(Map<String, Object> p) {
-        if (p.get("readerId") == null) {
-            Long current = currentReaderId();
-            if (current != null) p.put("readerId", current);
+        Long current = currentReaderId();
+        if (current != null) {
+            p.put("readerId", current);
+        } else if (p.get("readerId") == null) {
+            throw new BusinessException("读者不能为空");
         }
         mapper.upsertGoal(p);
     }

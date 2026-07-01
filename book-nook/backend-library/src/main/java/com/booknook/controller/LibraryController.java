@@ -35,7 +35,7 @@ public class LibraryController {
     public Result<Void> deleteBook(@PathVariable Long id) { requireManager(); service.deleteBook(id); return Result.ok(); }
 
     @GetMapping("/api/reader/list")
-    public Result<PageResult<Map<String, Object>>> readers(@RequestParam Map<String, Object> p) { return Result.ok(service.readers(p)); }
+    public Result<PageResult<Map<String, Object>>> readers(@RequestParam Map<String, Object> p) { requireManager(); return Result.ok(service.readers(p)); }
     @PostMapping("/api/reader")
     public Result<Void> createReader(@RequestBody Map<String, Object> p) { requireManager(); service.saveReader(null, p); return Result.ok(); }
     @PutMapping("/api/reader/{id}")
@@ -44,9 +44,9 @@ public class LibraryController {
     public Result<Void> deleteReader(@PathVariable Long id) { requireManager(); service.deleteReader(id); return Result.ok(); }
 
     @PostMapping("/api/borrow")
-    public Result<Void> borrow(@RequestBody Map<String, Object> p) { service.borrow(num(p.get("readerId")), num(p.get("bookId"))); return Result.ok(); }
+    public Result<Void> borrow(@RequestBody Map<String, Object> p) { requireManager(); service.borrow(num(p.get("readerId")), num(p.get("bookId"))); return Result.ok(); }
     @PutMapping("/api/borrow/{id}/return")
-    public Result<Void> returnBook(@PathVariable Long id) { service.returnBook(id); return Result.ok(); }
+    public Result<Void> returnBook(@PathVariable Long id) { requireManager(); service.returnBook(id); return Result.ok(); }
     @GetMapping("/api/borrow/list")
     public Result<PageResult<Map<String, Object>>> borrows(@RequestParam Map<String, Object> p) { return Result.ok(service.borrows(p)); }
 
@@ -56,7 +56,7 @@ public class LibraryController {
     public Result<PageResult<Map<String, Object>>> reservations(@RequestParam Map<String, Object> p) { return Result.ok(service.reservations(p)); }
 
     @GetMapping("/api/inventory-log/list")
-    public Result<PageResult<Map<String, Object>>> inventory(@RequestParam Map<String, Object> p) { return Result.ok(service.inventoryLogs(p)); }
+    public Result<PageResult<Map<String, Object>>> inventory(@RequestParam Map<String, Object> p) { requireManager(); return Result.ok(service.inventoryLogs(p)); }
 
     @GetMapping("/api/reading-goal/list")
     public Result<List<Map<String, Object>>> goals(@RequestParam(required = false) Long readerId) { return Result.ok(service.goals(readerId)); }
