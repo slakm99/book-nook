@@ -94,4 +94,8 @@ http://127.0.0.1:5173/login
 
 - 管理员：`admin / 123456`
 - 馆员：`librarian / 123456`
-- 读者：`reader / 123456`
+- 读者：`linxiaozhou / 123456`
+- 读者：`chennanxing / 123456`
+- 读者：`zhouyuan / 123456`
+- 读者：`xuzhixia / 123456`
+- 读者：`gumingyuan / 123456`

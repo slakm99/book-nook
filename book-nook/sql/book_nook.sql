@@ -182,9 +182,11 @@ INSERT INTO librarian(staff_no,name,phone,position,status) VALUES
 INSERT INTO sys_user(username,password,role,ref_id,status) VALUES
 ('admin','123456','ADMIN',NULL,1),
 ('librarian','123456','LIBRARIAN',1,1),
-('reader','123456','READER',1,1),
 ('linxiaozhou','123456','READER',1,1),
-('chennanxing','123456','READER',2,1);
+('chennanxing','123456','READER',2,1),
+('zhouyuan','123456','READER',3,1),
+('xuzhixia','123456','READER',4,1),
+('gumingyuan','123456','READER',5,1);
 
 INSERT INTO borrow_record(reader_id,book_id,borrow_time,due_time,return_time,status,renew_count) VALUES
 (1,3,DATE_SUB(NOW(), INTERVAL 8 DAY),DATE_ADD(NOW(), INTERVAL 22 DAY),NULL,'BORROWED',0),
