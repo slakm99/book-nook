@@ -67,7 +67,11 @@ const readerMenus = [
   { path: '/profile', label: '个人中心', icon: User }
 ]
 
-const menus = computed(() => user.value.role === 'READER' ? readerMenus : adminMenus)
+const menus = computed(() => {
+  if (user.value.role === 'READER') return readerMenus
+  if (user.value.role === 'LIBRARIAN') return adminMenus.filter(item => item.path !== '/statistics')
+  return adminMenus
+})
 const roleName = computed(() => ({ ADMIN: '管理员', LIBRARIAN: '馆员', READER: '读者' }[user.value.role] || '访客'))
 
 function handleLogout() {

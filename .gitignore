@@ -8,6 +8,11 @@ book-nook/backend-library/target/
 # 前端依赖和构建产物
 book-nook/frontend-library/node_modules/
 book-nook/frontend-library/dist/
+book-nook/frontend-library/.vite/
+*.timestamp-*
+.env.local
+.env.*.local
+coverage/
 
 # 文档/WPS/渲染临时文件
 ~$*.docx

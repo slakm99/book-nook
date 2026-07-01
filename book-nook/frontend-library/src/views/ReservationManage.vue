@@ -44,7 +44,7 @@
     </el-table>
 
     <div class="pagination-wrap">
-      <el-pagination v-model:current-page="query.page" :total="total" layout="total, prev, pager, next" @current-change="load" />
+      <el-pagination v-model:current-page="query.page" v-model:page-size="query.size" :page-sizes="[10, 20, 30]" :total="total" layout="total, sizes, prev, pager, next" @size-change="load" @current-change="load" />
     </div>
 
     <el-dialog v-model="visible" title="新增预约" width="420px">

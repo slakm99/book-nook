@@ -36,13 +36,17 @@ router.beforeEach((to, from, next) => {
     next('/login')
     return
   }
-  if (to.path === '/login' && getToken()) {
-    next(getUser().role === 'READER' ? '/reader-home' : '/dashboard')
+  const user = getUser()
+  if (getToken() && !user?.role) {
+    next('/login')
     return
   }
-  const user = getUser()
-  if (to.meta.roles && !to.meta.roles.includes(user.role)) {
+  if (to.path === '/login' && getToken()) {
     next(user.role === 'READER' ? '/reader-home' : '/dashboard')
+    return
+  }
+  if (to.meta.roles && !to.meta.roles.includes(user?.role)) {
+    next(user?.role === 'READER' ? '/reader-home' : '/dashboard')
     return
   }
   next()

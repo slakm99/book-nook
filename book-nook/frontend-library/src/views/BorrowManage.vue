@@ -6,7 +6,7 @@
       <el-table-column prop="reader_name" label="读者" /><el-table-column prop="book_title" label="图书" /><el-table-column prop="borrow_time" label="借出时间" min-width="160" /><el-table-column prop="due_time" label="应还时间" min-width="160" /><el-table-column prop="display_status" label="状态" width="100" />
       <el-table-column v-if="isManager" label="操作" width="120"><template #default="{ row }"><el-button v-if="row.status !== 'RETURNED'" text @click="returnIt(row.id)">归还</el-button></template></el-table-column>
     </el-table>
-    <div class="pagination-wrap"><el-pagination v-model:current-page="query.page" :total="total" layout="total, prev, pager, next" @current-change="load"/></div>
+    <div class="pagination-wrap"><el-pagination v-model:current-page="query.page" v-model:page-size="query.size" :page-sizes="[10, 20, 30]" :total="total" layout="total, sizes, prev, pager, next" @size-change="load" @current-change="load"/></div>
     <el-dialog v-model="visible" title="办理借书" width="420px"><el-form :model="form" label-width="90px"><el-form-item label="读者ID"><el-input v-model="form.readerId"/></el-form-item><el-form-item label="图书ID"><el-input v-model="form.bookId"/></el-form-item></el-form><template #footer><el-button @click="visible=false">取消</el-button><el-button class="primary-action" @click="borrow">确认借出</el-button></template></el-dialog>
   </section>
 </template>

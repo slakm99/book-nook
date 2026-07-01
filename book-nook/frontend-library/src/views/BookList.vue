@@ -220,10 +220,17 @@ async function deleteBookRow(id) {
 }
 
 async function reserveBook(book) {
-  const user = getUser()
-  const readerId = user.role === 'READER' ? user.refId : '1'
-  await api.reserve({ readerId, bookId: book.id })
-  ElMessage.success('预约成功')
+  try {
+    const user = getUser()
+    if (user.role !== 'READER' || !user.refId) {
+      ElMessage.warning('只有读者可以在图书探索页预约图书')
+      return
+    }
+    await api.reserve({ readerId: user.refId, bookId: book.id })
+    ElMessage.success('预约成功')
+  } catch (error) {
+    ElMessage.error(error?.message || '预约失败，请稍后再试')
+  }
 }
 
 function splitTags(tags = '') {
@@ -234,7 +241,7 @@ function coverStyle(book) {
   const colors = ['#2f5d50,#d9a441', '#6f4f28,#e9d8a6', '#335c67,#f4a261', '#586f6b,#f2cc8f']
   const index = Number(book.id || 0) % colors.length
   const gradient = `linear-gradient(135deg, ${colors[index]})`
-  if (book.cover_url) {
+  if (isSafeCoverUrl(book.cover_url)) {
     return {
       backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.42)), url("${book.cover_url}")`,
       backgroundSize: 'cover',
@@ -242,6 +249,16 @@ function coverStyle(book) {
     }
   }
   return { background: gradient }
+}
+
+function isSafeCoverUrl(url) {
+  if (!url) return false
+  try {
+    const parsed = new URL(url)
+    return ['http:', 'https:'].includes(parsed.protocol)
+  } catch {
+    return false
+  }
 }
 
 onMounted(async () => {
