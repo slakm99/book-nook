@@ -16,9 +16,9 @@
         <el-input v-model="query.keyword" clearable placeholder="读者 / 图书" />
       </el-form-item>
       <el-form-item label="状态">
-        <el-select v-model="query.status" clearable style="width: 130px">
+        <el-select v-model="query.status" clearable placeholder="全部状态" style="width: 130px">
           <el-option label="借阅中" value="BORROWED" />
-          <el-option label="逾期" value="OVERDUE" />
+          <el-option label="已逾期" value="OVERDUE" />
           <el-option label="已归还" value="RETURNED" />
         </el-select>
       </el-form-item>
@@ -30,7 +30,13 @@
       <el-table-column prop="book_title" label="图书" />
       <el-table-column prop="borrow_time" label="借出时间" min-width="160" />
       <el-table-column prop="due_time" label="应还时间" min-width="160" />
-      <el-table-column prop="display_status" label="状态" width="100" />
+      <el-table-column label="状态" width="110">
+        <template #default="{ row }">
+          <el-tag :type="statusType(row.display_status || row.status)">
+            {{ statusText(row.display_status || row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column v-if="isManager" label="操作" width="120">
         <template #default="{ row }">
           <el-button v-if="row.status !== 'RETURNED'" text @click="returnIt(row.id)">归还</el-button>
@@ -56,7 +62,7 @@
           <el-select
             v-model="form.readerId"
             filterable
-            placeholder="请选择读者"
+            placeholder="请选择正常状态的读者"
             style="width: 100%"
           >
             <el-option
@@ -167,6 +173,22 @@ async function returnIt(id) {
   await api.returnBook(id)
   ElMessage.success('归还成功')
   load()
+}
+
+function statusText(status) {
+  return {
+    BORROWED: '借阅中',
+    OVERDUE: '已逾期',
+    RETURNED: '已归还'
+  }[status] || status
+}
+
+function statusType(status) {
+  return {
+    BORROWED: 'warning',
+    OVERDUE: 'danger',
+    RETURNED: 'success'
+  }[status] || 'info'
 }
 
 onMounted(load)
