@@ -4,9 +4,11 @@
       <div>
         <p class="eyebrow">RESERVATION</p>
         <h1>{{ $route.meta.title }}</h1>
-        <p class="muted-text">预约不会自动变成借阅。图书可取后，馆员需要点击“办理取书”，系统才会生成借阅记录并扣减库存。</p>
+        <p class="muted-text">
+          预约不会自动变成借阅。图书可取后，馆员点击“办理取书”，系统才生成借阅记录并扣减库存。
+        </p>
       </div>
-      <el-button v-if="isManager" class="primary-action" @click="visible = true">新增预约</el-button>
+      <el-button v-if="isManager" class="primary-action" @click="openDialog">新增预约</el-button>
     </div>
 
     <el-form inline>
@@ -25,7 +27,7 @@
       <el-button @click="search">搜索</el-button>
     </el-form>
 
-    <el-table :data="rows" v-loading="loading" border>
+    <el-table :data="rows" v-loading="loading" border empty-text="暂无预约记录">
       <el-table-column prop="reader_name" label="读者" />
       <el-table-column prop="book_title" label="图书" />
       <el-table-column prop="queue_no" label="排队号" width="90" />
@@ -37,24 +39,64 @@
       <el-table-column prop="pickup_deadline" label="取书截止" min-width="160" />
       <el-table-column label="操作" width="190">
         <template #default="{ row }">
-          <el-button v-if="isManager && row.status === 'READY'" text @click="pickup(row.id)">办理取书</el-button>
-          <el-button v-if="['WAITING', 'READY'].includes(row.status)" text type="danger" @click="cancel(row.id)">取消</el-button>
+          <el-button v-if="isManager && row.status === 'READY'" text @click="pickup(row.id)">
+            办理取书
+          </el-button>
+          <el-button v-if="['WAITING', 'READY'].includes(row.status)" text type="danger" @click="cancel(row.id)">
+            取消
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <div class="pagination-wrap">
-      <el-pagination v-model:current-page="query.page" v-model:page-size="query.size" :page-sizes="[10, 20, 30]" :total="total" layout="total, sizes, prev, pager, next" @size-change="load" @current-change="load" />
+      <el-pagination
+        v-model:current-page="query.page"
+        v-model:page-size="query.size"
+        :page-sizes="[10, 20, 30]"
+        :total="total"
+        layout="total, sizes, prev, pager, next"
+        @size-change="load"
+        @current-change="load"
+      />
     </div>
 
-    <el-dialog v-model="visible" title="新增预约" width="420px">
+    <el-dialog v-model="visible" title="新增预约" width="560px">
       <el-form :model="form" label-width="90px">
-        <el-form-item label="读者ID"><el-input v-model="form.readerId" /></el-form-item>
-        <el-form-item label="图书ID"><el-input v-model="form.bookId" /></el-form-item>
+        <el-form-item label="选择读者">
+          <el-select
+            v-model="form.readerId"
+            filterable
+            placeholder="请选择读者"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="reader in readerOptions"
+              :key="reader.id"
+              :label="`${reader.name}（${reader.student_no || reader.studentNo}）`"
+              :value="reader.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="选择图书">
+          <el-select
+            v-model="form.bookId"
+            filterable
+            placeholder="请选择预约图书"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="book in bookOptions"
+              :key="book.id"
+              :label="`${book.title}（${book.author}）- 可借${book.stock_available}册`"
+              :value="book.id"
+            />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="visible = false">取消</el-button>
-        <el-button class="primary-action" @click="reserve">确认预约</el-button>
+        <el-button class="primary-action" :loading="submitLoading" @click="reserve">确认预约</el-button>
       </template>
     </el-dialog>
   </section>
@@ -64,14 +106,20 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '../api/library'
+import { getBookList } from '../api/book'
 import { getUser } from '../utils/auth'
 
 const rows = ref([])
 const total = ref(0)
 const loading = ref(false)
 const visible = ref(false)
+const submitLoading = ref(false)
+const readerOptions = ref([])
+const bookOptions = ref([])
+
 const query = reactive({ page: 1, size: 10, keyword: '', status: '' })
-const form = reactive({ readerId: '1', bookId: '1' })
+const form = reactive({ readerId: '', bookId: '' })
+
 const currentUser = computed(() => getUser())
 const isManager = computed(() => ['ADMIN', 'LIBRARIAN'].includes(currentUser.value.role))
 
@@ -86,6 +134,23 @@ async function load() {
   }
 }
 
+async function loadOptions() {
+  if (!isManager.value) return
+  const [readerRes, bookRes] = await Promise.all([
+    api.readers({ page: 1, size: 100 }),
+    getBookList({ page: 1, size: 100 })
+  ])
+  readerOptions.value = readerRes.data.list || []
+  bookOptions.value = bookRes.data.list || []
+  form.readerId = readerOptions.value[0]?.id || ''
+  form.bookId = bookOptions.value[0]?.id || ''
+}
+
+async function openDialog() {
+  visible.value = true
+  await loadOptions()
+}
+
 function search() {
   query.page = 1
   load()
@@ -93,10 +158,19 @@ function search() {
 
 async function reserve() {
   if (!isManager.value) return
-  await api.reserve(form)
-  ElMessage.success('预约创建成功')
-  visible.value = false
-  load()
+  if (!form.readerId || !form.bookId) {
+    ElMessage.warning('请先选择读者和图书')
+    return
+  }
+  submitLoading.value = true
+  try {
+    await api.reserve(form)
+    ElMessage.success('预约创建成功')
+    visible.value = false
+    load()
+  } finally {
+    submitLoading.value = false
+  }
 }
 
 async function cancel(id) {
@@ -114,11 +188,23 @@ async function pickup(id) {
 }
 
 function statusText(status) {
-  return { WAITING: '等待排队', READY: '可取书', FINISHED: '已完成', CANCELLED: '已取消', EXPIRED: '已过期' }[status] || status
+  return {
+    WAITING: '等待排队',
+    READY: '可取书',
+    FINISHED: '已完成',
+    CANCELLED: '已取消',
+    EXPIRED: '已过期'
+  }[status] || status
 }
 
 function statusType(status) {
-  return { READY: 'success', WAITING: 'warning', FINISHED: 'info', CANCELLED: 'danger', EXPIRED: 'danger' }[status] || ''
+  return {
+    READY: 'success',
+    WAITING: 'warning',
+    FINISHED: 'info',
+    CANCELLED: 'danger',
+    EXPIRED: 'danger'
+  }[status] || ''
 }
 
 onMounted(load)
