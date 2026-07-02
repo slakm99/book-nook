@@ -35,9 +35,11 @@ public interface LibraryMapper {
 
     List<Map<String, Object>> listReaders(@Param("keyword") String keyword, @Param("status") String status, @Param("offset") int offset, @Param("size") int size);
     long countReaders(@Param("keyword") String keyword, @Param("status") String status);
+    Map<String, Object> findReaderById(@Param("id") Long id);
     int countReaderByStudentNo(@Param("studentNo") String studentNo, @Param("id") Long id);
     int insertReader(@Param("p") Map<String, Object> p);
     int updateReader(@Param("id") Long id, @Param("p") Map<String, Object> p);
+    int updateReaderUserStatus(@Param("readerId") Long readerId, @Param("status") Integer status);
     int deleteReader(@Param("id") Long id);
 
     int countActiveBorrow(@Param("readerId") Long readerId, @Param("bookId") Long bookId);

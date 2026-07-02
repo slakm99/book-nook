@@ -93,11 +93,13 @@
     </sql>
     <select id="listReaders" resultType="map">SELECT * FROM reader <include refid="readerWhere"/> ORDER BY id DESC LIMIT #{offset},#{size}</select>
     <select id="countReaders" resultType="long">SELECT COUNT(*) FROM reader <include refid="readerWhere"/></select>
+    <select id="findReaderById" resultType="map">SELECT * FROM reader WHERE id=#{id}</select>
     <select id="countReaderByStudentNo" resultType="int">
         SELECT COUNT(*) FROM reader WHERE student_no=#{studentNo}<if test="id != null"> AND id != #{id}</if>
     </select>
     <insert id="insertReader">INSERT INTO reader(student_no,name,phone,college,grade,status) VALUES(#{p.studentNo},#{p.name},#{p.phone},#{p.college},#{p.grade},COALESCE(#{p.status},1))</insert>
     <update id="updateReader">UPDATE reader SET student_no=#{p.studentNo},name=#{p.name},phone=#{p.phone},college=#{p.college},grade=#{p.grade},status=COALESCE(#{p.status},status) WHERE id=#{id}</update>
+    <update id="updateReaderUserStatus">UPDATE sys_user SET status=#{status} WHERE role='READER' AND ref_id=#{readerId}</update>
     <delete id="deleteReader">DELETE FROM reader WHERE id=#{id} AND NOT EXISTS(SELECT 1 FROM borrow_record WHERE reader_id=#{id})</delete>
 
     <select id="countActiveBorrow" resultType="int">SELECT COUNT(*) FROM borrow_record WHERE reader_id=#{readerId} AND book_id=#{bookId} AND status IN('BORROWED','OVERDUE')</select>

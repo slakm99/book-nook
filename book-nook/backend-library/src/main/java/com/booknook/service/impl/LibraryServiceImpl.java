@@ -81,7 +81,15 @@ public class LibraryServiceImpl implements LibraryService {
         p.put("studentNo", studentNo);
         p.put("name", name);
         p.put("phone", phone);
-        if (id == null) mapper.insertReader(p); else mapper.updateReader(id, p);
+        if (id == null) {
+            mapper.insertReader(p);
+        } else {
+            mapper.updateReader(id, p);
+            Object status = p.get("status");
+            if (status != null) {
+                mapper.updateReaderUserStatus(id, intVal(status, 1));
+            }
+        }
     }
 
     @Override
@@ -92,6 +100,7 @@ public class LibraryServiceImpl implements LibraryService {
     @Override
     @Transactional
     public void borrow(Long readerId, Long bookId) {
+        ensureReaderEnabled(readerId);
         if (readerId == null || bookId == null) throw new BusinessException("读者和图书不能为空");
         if (mapper.countActiveBorrow(readerId, bookId) > 0) throw new BusinessException("同一读者不能重复借阅尚未归还的同一本书");
         Map<String, Object> book = mapper.findBookForUpdate(bookId);
@@ -139,6 +148,7 @@ public class LibraryServiceImpl implements LibraryService {
         if (currentReaderId != null) {
             readerId = currentReaderId;
         }
+        ensureReaderEnabled(readerId);
         if (readerId == null || bookId == null) throw new BusinessException("读者和图书不能为空");
         if (mapper.countActiveReservation(readerId, bookId) > 0) throw new BusinessException("同一读者不能重复预约同一本有效图书");
         Map<String, Object> book = mapper.findBookForUpdate(bookId);
@@ -168,6 +178,7 @@ public class LibraryServiceImpl implements LibraryService {
         }
         Long readerId = ((Number) reservation.get("reader_id")).longValue();
         Long bookId = ((Number) reservation.get("book_id")).longValue();
+        ensureReaderEnabled(readerId);
         if (mapper.countActiveBorrow(readerId, bookId) > 0) {
             throw new BusinessException("该读者已经借阅了这本书，不能重复借阅");
         }
@@ -248,6 +259,15 @@ public class LibraryServiceImpl implements LibraryService {
     private Long currentReaderId() {
         LoginUser user = AuthContext.get();
         return user != null && "READER".equals(user.getRole()) ? user.getRefId() : null;
+    }
+
+    private void ensureReaderEnabled(Long readerId) {
+        Map<String, Object> reader = mapper.findReaderById(readerId);
+        if (reader == null) throw new BusinessException("读者不存在");
+        Object status = reader.get("status");
+        if (status instanceof Number && ((Number) status).intValue() != 1) {
+            throw new BusinessException("读者已停用，不能进行借阅或预约");
+        }
     }
 
     private int page(Map<String, Object> p) { return Math.max(intVal(p.get("page"), 1), 1); }

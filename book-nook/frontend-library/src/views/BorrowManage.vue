@@ -42,7 +42,7 @@
       <el-pagination
         v-model:current-page="query.page"
         v-model:page-size="query.size"
-        :page-sizes="[10, 20, 30]"
+        :page-sizes="[5, 10, 20, 30]"
         :total="total"
         layout="total, sizes, prev, pager, next"
         @size-change="load"
@@ -106,7 +106,7 @@ const submitLoading = ref(false)
 const readerOptions = ref([])
 const bookOptions = ref([])
 
-const query = reactive({ page: 1, size: 10, keyword: '', status: '' })
+const query = reactive({ page: 1, size: 5, keyword: '', status: '' })
 const form = reactive({ readerId: '', bookId: '' })
 
 const currentUser = computed(() => getUser())
@@ -126,7 +126,7 @@ async function load() {
 async function loadOptions() {
   if (!isManager.value) return
   const [readerRes, bookRes] = await Promise.all([
-    api.readers({ page: 1, size: 100 }),
+    api.readers({ page: 1, size: 100, status: 1 }),
     getBookList({ page: 1, size: 100, stockStatus: 'available' })
   ])
   readerOptions.value = readerRes.data.list || []
