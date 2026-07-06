@@ -21,6 +21,7 @@ const routes = [
       { path: '/my-reservations', component: () => import('../views/ReservationManage.vue'), meta: { title: '我的预约', roles: ['READER'] } },
       { path: '/reading-goal', component: () => import('../views/ReadingGoal.vue'), meta: { title: '阅读目标', roles: ['READER'] } },
       { path: '/recommendation', component: () => import('../views/Recommendation.vue'), meta: { title: '猜你喜欢', roles: ['READER'] } },
+      { path: '/reader-statistics', component: () => import('../views/ReaderStatistics.vue'), meta: { title: '我的统计', roles: ['READER'] } },
       { path: '/profile', component: () => import('../views/Placeholder.vue'), meta: { title: '个人中心', roles: ['READER'] } }
     ]
   }

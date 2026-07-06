@@ -199,6 +199,30 @@
         GROUP BY c.id ORDER BY value DESC
     </select>
     <select id="dashboardHotBooks" resultType="map">SELECT title name, borrow_count value FROM book ORDER BY borrow_count DESC LIMIT 8</select>
+    <select id="readerStatOverview" resultType="map">
+        SELECT
+        (SELECT COUNT(*) FROM borrow_record WHERE reader_id=#{readerId}) borrow_total,
+        (SELECT COUNT(*) FROM borrow_record WHERE reader_id=#{readerId} AND status='RETURNED') returned_total,
+        (SELECT COUNT(*) FROM borrow_record WHERE reader_id=#{readerId} AND status='BORROWED' AND due_time&gt;=NOW()) active_total,
+        (SELECT COUNT(*) FROM borrow_record WHERE reader_id=#{readerId} AND status IN('BORROWED','OVERDUE') AND due_time&lt;NOW()) overdue_total,
+        (SELECT COUNT(*) FROM borrow_reservation WHERE reader_id=#{readerId} AND status IN('WAITING','READY')) reservation_total
+    </select>
+    <select id="readerBorrowTrend" resultType="map">
+        SELECT DATE(borrow_time) name, COUNT(*) value
+        FROM borrow_record
+        WHERE reader_id=#{readerId} AND borrow_time &gt;= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
+        GROUP BY DATE(borrow_time)
+        ORDER BY name
+    </select>
+    <select id="readerCategoryDistribution" resultType="map">
+        SELECT c.category_name name, COUNT(br.id) value
+        FROM borrow_record br
+        JOIN book b ON b.id=br.book_id
+        JOIN book_category c ON c.id=b.category_id
+        WHERE br.reader_id=#{readerId}
+        GROUP BY c.id, c.category_name
+        ORDER BY value DESC
+    </select>
     <select id="favoriteCategory" resultType="long">
         SELECT b.category_id FROM borrow_record br JOIN book b ON b.id=br.book_id
         WHERE br.reader_id=#{readerId} GROUP BY b.category_id ORDER BY COUNT(*) DESC LIMIT 1

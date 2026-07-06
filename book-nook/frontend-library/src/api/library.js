@@ -28,6 +28,7 @@ export const api = {
   overview: () => request({ url: '/dashboard/overview' }),
   trend: () => request({ url: '/dashboard/trend' }),
   categoryDistribution: () => request({ url: '/dashboard/category-distribution' }),
+  readerStats: () => request({ url: '/reader-stat/me' }),
   recommendation: () => request({ url: '/recommendation/me' }),
   blindPick: () => request({ url: '/book/blind-pick' })
 }

@@ -27,6 +27,7 @@ public interface LibraryService {
     Map<String, Object> overview();
     List<Map<String, Object>> trend();
     List<Map<String, Object>> categoryDistribution();
+    Map<String, Object> readerStats();
     List<Map<String, Object>> recommendations();
     Map<String, Object> blindPick();
 }

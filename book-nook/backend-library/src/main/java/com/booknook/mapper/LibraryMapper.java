@@ -76,6 +76,9 @@ public interface LibraryMapper {
     List<Map<String, Object>> dashboardTrend();
     List<Map<String, Object>> dashboardCategoryDistribution();
     List<Map<String, Object>> dashboardHotBooks();
+    Map<String, Object> readerStatOverview(@Param("readerId") Long readerId);
+    List<Map<String, Object>> readerBorrowTrend(@Param("readerId") Long readerId);
+    List<Map<String, Object>> readerCategoryDistribution(@Param("readerId") Long readerId);
     Long favoriteCategory(@Param("readerId") Long readerId);
     List<Map<String, Object>> recommendByCategory(@Param("readerId") Long readerId, @Param("categoryId") Long categoryId);
     List<Map<String, Object>> recommendHot(@Param("readerId") Long readerId);

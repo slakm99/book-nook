@@ -240,6 +240,16 @@ public class LibraryServiceImpl implements LibraryService {
     public List<Map<String, Object>> categoryDistribution() { return mapper.dashboardCategoryDistribution(); }
 
     @Override
+    public Map<String, Object> readerStats() {
+        Long readerId = currentReaderId();
+        if (readerId == null) throw new BusinessException(403, "只有读者可以查看个人统计");
+        Map<String, Object> data = new HashMap<>(mapper.readerStatOverview(readerId));
+        data.put("trend", mapper.readerBorrowTrend(readerId));
+        data.put("categoryDistribution", mapper.readerCategoryDistribution(readerId));
+        return data;
+    }
+
+    @Override
     public List<Map<String, Object>> recommendations() {
         Long readerId = currentReaderId();
         Long categoryId = readerId == null ? null : mapper.favoriteCategory(readerId);

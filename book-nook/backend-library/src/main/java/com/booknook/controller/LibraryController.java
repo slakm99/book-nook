@@ -73,6 +73,8 @@ public class LibraryController {
     public Result<List<Map<String, Object>>> trend() { return Result.ok(service.trend()); }
     @GetMapping("/api/dashboard/category-distribution")
     public Result<List<Map<String, Object>>> categoryDistribution() { return Result.ok(service.categoryDistribution()); }
+    @GetMapping("/api/reader-stat/me")
+    public Result<Map<String, Object>> readerStats() { return Result.ok(service.readerStats()); }
     @GetMapping("/api/recommendation/me")
     public Result<List<Map<String, Object>>> recommendation() { return Result.ok(service.recommendations()); }
     @GetMapping("/api/book/blind-pick")

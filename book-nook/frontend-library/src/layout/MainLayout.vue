@@ -40,7 +40,19 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Collection, DataAnalysis, Files, Reading, User, Tickets, Notebook, TrendCharts, Aim, Star, House } from '@element-plus/icons-vue'
+import {
+  Aim,
+  Collection,
+  DataAnalysis,
+  Files,
+  House,
+  Notebook,
+  Reading,
+  Star,
+  Tickets,
+  TrendCharts,
+  User
+} from '@element-plus/icons-vue'
 import { getUser, logout } from '../utils/auth'
 
 const router = useRouter()
@@ -64,6 +76,7 @@ const readerMenus = [
   { path: '/my-reservations', label: '我的预约', icon: Tickets },
   { path: '/reading-goal', label: '阅读目标', icon: Aim },
   { path: '/recommendation', label: '猜你喜欢', icon: Star },
+  { path: '/reader-statistics', label: '我的统计', icon: TrendCharts },
   { path: '/profile', label: '个人中心', icon: User }
 ]
 
@@ -72,6 +85,7 @@ const menus = computed(() => {
   if (user.value.role === 'LIBRARIAN') return adminMenus.filter(item => item.path !== '/statistics')
   return adminMenus
 })
+
 const roleName = computed(() => ({ ADMIN: '管理员', LIBRARIAN: '馆员', READER: '读者' }[user.value.role] || '访客'))
 
 function handleLogout() {
